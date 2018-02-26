@@ -3,6 +3,8 @@ import numpy as np
 import os
 
 from sklearn import svm
+from sklearn import ensemble
+
 #from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
@@ -12,7 +14,7 @@ from sklearn.metrics import classification_report
 
 
 # Directory containing pickles.
-pkl_dir = 'tensors/'
+pkl_dir = 'tensors/hog2d_8bins/'
 
 # Train and test folds.
 train_fold_file = 'DatabasePorn/training/fold0123_video.txt'
@@ -97,28 +99,41 @@ train_labels = np.asarray(train_labels)
 
 test_feats = np.asarray(test_feats)
 test_labels = np.asarray(test_labels)
-        
-# Initiating SVM.
-clf = svm.SVC()
 
-# Fitting SVM to training data.
-clf.fit(train_feats, train_labels)
+# Initiating classifiers.
+svm = svm.SVC()
+rf = ensemble.RandomForestClassifier()
+adaboost = ensemble.AdaBoostClassifier()
 
-# Generating predictions on test set.
-preds = clf.predict(test_feats)
+# Classifiers.
+names = ['SVM', 'RandomForest', 'AdaBoost']
+classifiers = [svm, rf, adaboost]
 
-report = classification_report(test_labels, preds)
+for i in range(len(classifiers)):
 
-confusion_matrix = confusion_matrix(test_labels, preds)
-accuracy = accuracy_score(test_labels, preds)
-precision = precision_score(test_labels, preds)
-recall = recall_score(test_labels, preds)
+    cl = classifiers[i]
+    name = names[i]
+    
+    print('############################################')
+    print(name)
+    print('')
+    
+    # Fitting SVM to training data.
+    cl.fit(train_feats, train_labels)
 
-print('Confusion Matrix', confusion_matrix)
-print('Accuracy', accuracy)
-print('Precision', precision)
-print('Recall', recall)
+    # Generating predictions on test set.
+    preds = cl.predict(test_feats)
 
-# Performing Crossvalidation.
-#scores = cross_val_score(clf, feats, labels, cv = 5, scoring = 'accuracy')
-#scores
+    #report = classification_report(test_labels, preds)
+
+    confusion = confusion_matrix(test_labels, preds)
+    accuracy = accuracy_score(test_labels, preds)
+    precision = precision_score(test_labels, preds)
+    recall = recall_score(test_labels, preds)
+
+    print('Confusion Matrix', confusion)
+    print('Accuracy', accuracy)
+    print('Precision', precision)
+    print('Recall', recall)
+    print('############################################')
+
