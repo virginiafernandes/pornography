@@ -102,7 +102,7 @@ test_feats = np.asarray(test_feats)
 test_labels = np.asarray(test_labels)
 
 # Initiating classifiers.
-svm = svm.SVC()
+svm = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=False, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None)
 rf = ensemble.RandomForestClassifier()
 adaboost = ensemble.AdaBoostClassifier()
 
