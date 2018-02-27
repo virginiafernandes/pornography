@@ -14,7 +14,8 @@ from sklearn.metrics import classification_report
 
 
 # Directory containing pickles.
-pkl_dir = 'tensors/hog2d_8bins/'
+pkl_dir = 'tensors/hog2d_16bins/'
+#pkl_dir = '/home/hugo/Brasileirinhas/'
 
 # Train and test folds.
 train_fold_file = 'DatabasePorn/training/fold0123_video.txt'
@@ -49,11 +50,11 @@ for i in range(len(train_list)):
     try:
         
         # Loading pickle.
-        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog8.pkl', 'rb'))
+        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog16.pkl', 'rb'))
         pkl = pkl['tensor_series'].ravel()
         # Appending feature matrix.
         train_feats.append(pkl)
-        #print(pkl)
+        print(pkl.shape)
         
         # Loading label.
         lab = 1 # Initiates as porn.
@@ -76,11 +77,11 @@ for i in range(len(test_list)):
     try:
         
         # Loading pickle.
-        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog8.pkl', 'rb'))
+        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog16.pkl', 'rb'))
         pkl = pkl['tensor_series'].ravel()
         # Appending feature matrix.
         test_feats.append(pkl)
-        #print(pkl)
+        print(pkl.shape)
         
         # Loading label.
         lab = 1 # Initiates as porn.

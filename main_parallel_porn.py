@@ -19,7 +19,7 @@ def read_videolist(fname, videolist):
 
 def creating_tensor_series(features, tensor_series, bins):
 
-	b = (bins/2)*bins
+	b = bins
 	matrix = np.zeros((b, b), dtype=np.float)
 	matrix2 = np.zeros((b, b), dtype=np.float)
 
@@ -34,21 +34,22 @@ def creating_tensor_series(features, tensor_series, bins):
 				matrix2[i][j] += matrix[i][j]
 
 		#normalizing l2 - each image has a tensor
-		mean = 0.0
-		for i in range(0, b):
-			for j in range(0, b):
-				mean += matrix2[i][j] * matrix2[i][j]
+		#mean = 0.0
+		#for i in range(0, b):
+		#	for j in range(0, b):
+		#		mean += matrix2[i][j] * matrix2[i][j]
 
-		for i in range(0,b):
-			for j in range(0,b):
-				matrix2[i][j] /= math.sqrt(mean)
+
+		#for i in range(0,b):
+		#	for j in range(0,b):
+		#		matrix2[i][j] /= math.sqrt(mean)
 
 		tensor_series.append(matrix2)
 
 	return tensor_series
 
 def creating_final_tensor(tensor_series, bins):
-	b = (bins/2)*bins
+	b = bins
         final_tensor = np.zeros((b, b), dtype=np.float)
 
 	for f in range(0, len(tensor_series)):
@@ -72,10 +73,26 @@ def creating_final_tensor(tensor_series, bins):
 
 
 def extracting_hog(frame, bins):
-	// Calculate gradients gx, gy
-	gx = cv2.Sobel(frame, cv2.CV_32F, 1, 0, ksize=1)
-	gy = cv2.Sobel(frame, cv2.CV_32F, 0, 1, ksize=1)
+	winSize = (64,64)
+	blockSize = (16,16)
+	blockStride = (8,8)
+	cellSize = (8,8)
+	nbins = bins
+	derivAperture = 1
+	winSigma = 4.
+	histogramNormType = 0
+	L2HysThreshold = 2.0000000000000001e-01
+	gammaCorrection = 0
+	nlevels = 64
+	hog = cv2.HOGDescriptor(winSize,blockSize,blockStride,cellSize,nbins,derivAperture,winSigma,
+                        histogramNormType,L2HysThreshold,gammaCorrection,nlevels)
+	#compute(img[, winStride[, padding[, locations]]]) -> descriptors
+	winStride = (8,8)
+	padding = (8,8)
+	locations = ((10,20),)
+	hist = hog.compute(frame,winStride,padding,locations)
 
+	return hist
 
 def process(video, tensor_series, bins):
 
@@ -89,19 +106,22 @@ def process(video, tensor_series, bins):
 			break
 	
 		#extracting hog
-		#features = extracting_hog(frame, bins)		
+		features = []
+		features.append(extracting_hog(frame, bins))
 
 		#creating_tensor_series for frame
-		#tensor_series = creating_tensor_series(features, tensor_series, bins) 	
+		tensor_series = creating_tensor_series(features, tensor_series, bins) 	
 
 	vid.release()
 	
 	#accumulate temporal information - for each video
-	#final_tensor = creating_final_tensor(tensor_series, bins)
+	final_tensor = creating_final_tensor(tensor_series, bins)
 	
+	print final_tensor
+
 	name = video[0:pos]
 	name = name.split('/')
-    	name_file = 'tensors/tensor_from' + name[2] +'hog' + bins + '.pkl'
+    	name_file = 'tensors/tensor_from' + name[2] +'hog' + str(bins) + '.pkl'
 
     	with open(name_file, 'wb') as file:
 		pickle.dump({'tensor_series': final_tensor}, file)
@@ -111,7 +131,7 @@ def process(video, tensor_series, bins):
 #read number of bins
 
 videos = str(sys.argv[1])
-bins = str(sys.argv[2]) #the second bin is half of it
+bins = int(sys.argv[2])
 
 videolist = []
 read_videolist(videos, videolist)
@@ -119,7 +139,7 @@ read_videolist(videos, videolist)
 tensor_series = []
 
 #extract feature and create tensor
-#Parallel(n_jobs=4)(delayed(process)(videolist[i], tensor_series, bins) for i in range(len(videolist)))
-Parallel(n_jobs=4)(delayed(process)(videolist[i], tensor_series, bins) for i in range(10))
+Parallel(n_jobs=4)(delayed(process)(videolist[i], tensor_series, bins) for i in range(len(videolist)))
+#Parallel(n_jobs=4)(delayed(process)(videolist[i], tensor_series, bins) for i in range(4))
 
 
