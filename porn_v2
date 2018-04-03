@@ -1,0 +1,140 @@
+import pickle
+import numpy as np
+import os
+
+from sklearn import svm
+from sklearn import ensemble
+
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import fbeta_score
+
+from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import cross_val_score
+
+
+# Directory containing pickles.
+pkl_dir = 'tensors/Porn2K/hog2d_16bins/'
+
+# Listing files in pkl_dir.
+total_list = [f for f in os.listdir(pkl_dir) if os.path.isfile(os.path.join(pkl_dir, f))]
+
+# Initiating lists.
+feats  = list()
+labels = list()
+# Iterating over pickle files.
+for i in range(len(total_list)):
+    
+    f = total_list[i].replace('\r\r', '')
+
+    try:
+
+        # Loading pickle.
+        pkl = pickle.load(open(pkl_dir + f, 'rb'))
+        pkl = pkl['tensor_series'].ravel()
+
+        # Appending feature matrix.
+        feats.append(pkl)
+        #print(pkl.shape)
+
+        # Loading label.
+        lab = 1 # Initiates as porn.
+        # If 'NonPorn' in file name, switch to lab = 0 (non porn).
+        if 'NonPorn' in f:
+            lab = 0
+
+        # Appending label vector.
+        labels.append(lab)
+        
+    except:
+        continue
+
+feats = np.asarray(feats)
+labels = np.asarray(labels)
+
+# Initiating classifiers.
+svm = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=False, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None)
+rf = ensemble.RandomForestClassifier()
+adaboost = ensemble.AdaBoostClassifier()
+
+# Classifiers.
+names = ['SVM', 'RandomForest', 'AdaBoost']
+classifiers = [svm, rf, adaboost]
+
+accuracy_np = [list(), list(), list()]
+precision_np = [list(), list(), list()]
+recall_np = [list(), list(), list()]
+f2_np = [list(), list(), list()]
+
+print(accuracy_np)
+
+iterations = 5
+
+for j in range(iterations):
+
+    train_feats, test_feats, train_labels, test_labels = train_test_split(feats, labels, test_size=0.5)
+
+    for i in range(len(classifiers)):
+
+        cl = classifiers[i]
+        name = names[i]
+
+        print('############################################')
+        print(name + ' for iteration ' + str(j))
+        print('')
+
+        # Fitting SVM to training data.
+        cl.fit(train_feats, train_labels)
+
+        # Generating predictions on test set.
+        preds = cl.predict(test_feats)
+
+        #report = classification_report(test_labels, preds)
+
+        confusion = confusion_matrix(test_labels, preds)
+        accuracy = accuracy_score(test_labels, preds)
+        precision = precision_score(test_labels, preds)
+        recall = recall_score(test_labels, preds)
+        f2 = fbeta_score(test_labels, preds, 2)
+        
+        accuracy_np[i].append(accuracy)
+        precision_np[i].append(precision)
+        recall_np[i].append(recall)
+        f2_np[i].append(f2)
+
+        print('Confusion Matrix', confusion)
+        print('Accuracy', accuracy)
+        print('Precision', precision)
+        print('Recall', recall)
+        print('F2', f2)
+        print('############################################')
+
+print('')
+print('#################################################################################')
+print('## FINAL RESULTS ################################################################')
+print('#################################################################################')
+print('')
+
+# Printing results for all metrics.
+for i in range(len(classifiers)):
+    
+    name = names[i]
+
+    print('############################################')
+    print(name)
+    print('')
+    
+    accuracy_arr = np.asarray(accuracy_np[i], dtype=np.float)
+    precision_arr = np.asarray(precision_np[i], dtype=np.float)
+    recall_arr = np.asarray(recall_np[i], dtype=np.float)
+    f2_arr = np.asarray(f2_np[i], dtype=np.float)
+
+    print('Accuracy: ', str(accuracy_arr.mean()) + ' +/- ' + str(accuracy_arr.std()))
+    print('Precision: ', str(precision_arr.mean()) + ' +/- ' + str(precision_arr.std()))
+    print('Recall: ', str(recall_arr.mean()) + ' +/- ' + str(recall_arr.std()))
+    print('F2: ', str(f2_arr.mean()) + ' +/- ' + str(f2_arr.std()))
+    print('############################################')
+
