@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import os
 
+
 from sklearn import svm
 from sklearn import ensemble
 
@@ -14,12 +15,12 @@ from sklearn.metrics import classification_report
 
 
 # Directory containing pickles.
-pkl_dir = 'tensors/hog2d_16bins/'
+pkl_dir = 'tensors/grid16/hog2d_32bins/'
 #pkl_dir = '/home/hugo/Brasileirinhas/'
 
 # Train and test folds.
-train_fold_file = 'DatabasePorn/training/fold0123_video.txt'
-test_fold_file = 'DatabasePorn/test/fold4_video.txt'
+train_fold_file = 'DatabasePorn/training/fold1234_video.txt'
+test_fold_file = 'DatabasePorn/test/fold0_video.txt'
 
 train_list = [l.strip('\n') for l in open(train_fold_file).readlines()]
 test_list  = [l.strip('\n') for l in open(test_fold_file).readlines()]
@@ -50,11 +51,11 @@ for i in range(len(train_list)):
     try:
         
         # Loading pickle.
-        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog16.pkl', 'rb'))
+        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog32.pkl', 'rb'))
         pkl = pkl['tensor_series'].ravel()
         # Appending feature matrix.
         train_feats.append(pkl)
-        print(pkl.shape)
+        #print(pkl.shape)
         
         # Loading label.
         lab = 1 # Initiates as porn.
@@ -77,11 +78,11 @@ for i in range(len(test_list)):
     try:
         
         # Loading pickle.
-        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog16.pkl', 'rb'))
+        pkl = pickle.load(open(pkl_dir + 'tensor_from' + f + '.avihog32.pkl', 'rb'))
         pkl = pkl['tensor_series'].ravel()
         # Appending feature matrix.
         test_feats.append(pkl)
-        print(pkl.shape)
+        #print(pkl.shape)
         
         # Loading label.
         lab = 1 # Initiates as porn.

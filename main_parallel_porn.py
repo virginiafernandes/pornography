@@ -7,6 +7,7 @@ import struct
 import pickle
 import colorsys
 
+
 from joblib import Parallel, delayed
 
 def read_videolist(fname, videolist):
@@ -76,7 +77,8 @@ def extracting_hog(frame, bins):
 	winSize = (64,64)
 	blockSize = (16,16)
 	blockStride = (8,8)
-	cellSize = (8,8)
+	#cellSize = (8,8)
+	cellSize = (16,16)
 	nbins = bins
 	derivAperture = 1
 	winSigma = 4.
@@ -121,7 +123,7 @@ def process(video, tensor_series, bins):
 
 	name = video[0:pos]
 	name = name.split('/')
-    	name_file = 'tensors/tensor_from' + name[2] +'hog' + str(bins) + '.pkl'
+    	name_file = 'tensors/tensor_from' + name[1] +'hog' + str(bins) + '.pkl'
 
     	with open(name_file, 'wb') as file:
 		pickle.dump({'tensor_series': final_tensor}, file)
@@ -141,5 +143,4 @@ tensor_series = []
 #extract feature and create tensor
 Parallel(n_jobs=4)(delayed(process)(videolist[i], tensor_series, bins) for i in range(len(videolist)))
 #Parallel(n_jobs=4)(delayed(process)(videolist[i], tensor_series, bins) for i in range(4))
-
 
